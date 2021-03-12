@@ -167,22 +167,9 @@ class Repository:
                     encoding="utf-8",
                     cwd=self.local_dir,
                 )
-                subprocess.run(
-                    "git fetch".split(),
-                    stderr=subprocess.PIPE,
-                    stdout=subprocess.PIPE,
-                    check=True,
-                    encoding="utf-8",
-                    cwd=self.local_dir,
-                )
-                subprocess.run(
-                    "git reset origin/main".split(),
-                    stderr=subprocess.PIPE,
-                    stdout=subprocess.PIPE,
-                    encoding="utf-8",
-                    check=True,
-                    cwd=self.local_dir,
-                )
+                self.git_fetch()
+                self.git_reset("origin/main")
+
                 # TODO(check if we really want the --force flag)
                 subprocess.run(
                     "git checkout origin/main -ft".split(),
@@ -220,6 +207,39 @@ class Repository:
                     encoding="utf-8",
                     cwd=self.local_dir,
                 )
+        except subprocess.CalledProcessError as exc:
+            raise EnvironmentError(exc.stderr)
+
+    def git_reset(self, revision, hard: bool = False):
+        """
+        git pull
+        """
+        try:
+            subprocess.run(
+                ["git", "reset", revision] + (["--hard"] if hard else []),
+                stderr=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                check=True,
+                encoding="utf-8",
+                cwd=self.local_dir,
+            )
+        except subprocess.CalledProcessError as exc:
+            raise EnvironmentError(exc.stderr)
+
+    def git_fetch(self):
+        """
+        git pull
+        """
+        args = "git fetch".split()
+        try:
+            subprocess.run(
+                args,
+                stderr=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                check=True,
+                encoding="utf-8",
+                cwd=self.local_dir,
+            )
         except subprocess.CalledProcessError as exc:
             raise EnvironmentError(exc.stderr)
 
