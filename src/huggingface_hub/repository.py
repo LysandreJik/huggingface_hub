@@ -252,6 +252,8 @@ def lfs_log_progress():
     This is a context manager that will log the Git LFS progress of cleaning, smudging, pulling and pushing.
     """
 
+    logger.error("LFS Log Progress")
+
     if logger.getEffectiveLevel() >= logging.ERROR:
         try:
             yield
@@ -262,9 +264,11 @@ def lfs_log_progress():
         """
         To be launched as a separate thread with an event meaning it should stop the tail.
         """
+        logger.error("Outputing progress...")
         pbars = {}
 
         def close_pbars():
+            logger.error("Closing pbar")
             for pbar in pbars.values():
                 pbar["bar"].update(pbar["bar"].total - pbar["past_bytes"])
                 pbar["bar"].refresh()
@@ -275,6 +279,7 @@ def lfs_log_progress():
             Creates a generator to be iterated through, which will return each line one by one.
             Will stop tailing the file if the stopping_event is set.
             """
+            logger.error("Tailing file")
             with open(filename, "r") as file:
                 current_line = ""
                 while True:
@@ -294,6 +299,7 @@ def lfs_log_progress():
         # If the file isn't created yet, wait for a few seconds before trying again.
         # Can be interrupted with the stopping_event.
         while not os.path.exists(os.environ["GIT_LFS_PROGRESS"]):
+            logger.error(f"LFS progress {os.environ['GIT_LFS_PROGRESS']} file not available")
             if stopping_event.is_set():
                 close_pbars()
                 return
@@ -301,6 +307,7 @@ def lfs_log_progress():
             time.sleep(2)
 
         for line in tail_file(os.environ["GIT_LFS_PROGRESS"]):
+            logger.error("Tailing line in file")
             state, file_progress, byte_progress, filename = line.split()
             description = f"{state.capitalize()} file {filename}"
 
@@ -334,12 +341,16 @@ def lfs_log_progress():
 
         exit_event = threading.Event()
         x = threading.Thread(target=output_progress, args=(exit_event,), daemon=True)
+
+        logger.error("Starting thread")
         x.start()
 
         try:
+            logger.error("Yielding")
             yield
         finally:
             exit_event.set()
+            logger.error("Joining threads")
             x.join()
 
             os.environ["GIT_LFS_PROGRESS"] = current_lfs_progress_value
