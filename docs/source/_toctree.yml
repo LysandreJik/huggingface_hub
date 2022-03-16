@@ -12,5 +12,7 @@
 - sections:
     - local: package_reference/repository
       title: Repository
+    - local: package_reference/hf_api
+      title: Hugging Face Hub API
   title: "Reference"
 
