@@ -434,13 +434,11 @@ class Repository:
         Instantiate a local clone of a git repo.
 
 
-        If specifying a `clone_from`:
-        will clone an existing remote repository, for instance one
+        If specifying a `clone_from`, it will clone an existing remote repository, for instance one
         that was previously created using `HfApi().create_repo(repo_id=repo_name)`.
+
         `Repository` uses the local git credentials by default, but if required, the `huggingface_token`
         as well as the git `user` and the `email` can be explicitly specified.
-        If `clone_from` is used, and the repository is being instantiated into a non-empty directory,
-        e.g. a directory with your trained model files, it will automatically merge them.
 
         Args:
             local_dir (`str`):
@@ -1457,14 +1455,16 @@ class Repository:
 
         Examples:
 
-            >>> with Repository("text-files", clone_from="<user>/text-files", use_auth_token=True).commit("My first file :)"):
-            ...     with open("file.txt", "w+") as f:
-            ...         f.write(json.dumps({"hey": 8}))
+        ```python
+        >>> with Repository("text-files", clone_from="<user>/text-files", use_auth_token=True).commit("My first file :)"):
+        ...     with open("file.txt", "w+") as f:
+        ...         f.write(json.dumps({"hey": 8}))
 
-            >>> import torch
-            >>> model = torch.nn.Transformer()
-            >>> with Repository("torch-model", clone_from="<user>/torch-model", use_auth_token=True).commit("My cool model :)"):
-            ...     torch.save(model.state_dict(), "model.pt")
+        >>> import torch
+        >>> model = torch.nn.Transformer()
+        >>> with Repository("torch-model", clone_from="<user>/torch-model", use_auth_token=True).commit("My cool model :)"):
+        ...     torch.save(model.state_dict(), "model.pt")
+        ```
 
         """
 
