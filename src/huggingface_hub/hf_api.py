@@ -80,7 +80,7 @@ def _validate_repo_id_deprecation(repo_id, name, organization):
     return name, organization
 
 
-def repo_type_and_id_from_hf_id(hf_id: str):
+def repo_type_and_id_from_hf_id(hf_id: str) -> Tuple[Optional[str], Optional[str], str]:
     """
     Returns the repo type and ID from a huggingface.co URL linking to a
     repository
