@@ -1,0 +1,12 @@
+name: Build PR Documentation
+
+on:
+  pull_request
+
+jobs:
+  build:
+    uses: lysandrejik/doc-builder/.github/workflows/build_pr_documentation.yml@lysandrejik-workflow
+    with:
+      commit_sha: ${{ github.event.pull_request.head.sha }}
+      pr_number: ${{ github.event.number }}
+      package: huggingface_hub
