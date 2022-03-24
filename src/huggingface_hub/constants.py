@@ -30,7 +30,6 @@ ENDPOINT = (
 
 
 HUGGINGFACE_CO_URL_TEMPLATE = ENDPOINT + "/{repo_id}/resolve/{revision}/{filename}"
-HUGGINGFACE_HEADER_X_REPO_COMMIT = "X-Repo-Commit"
 
 REPO_TYPE_DATASET = "dataset"
 REPO_TYPE_SPACE = "space"
