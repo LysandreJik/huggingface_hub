@@ -136,7 +136,7 @@ class RepoFile:
     Data structure that represents a public file inside a repo, accessible from huggingface.co
     """
 
-    def __init__(self, rfilename: str, **kwargs):
+    def __init__(self, *, rfilename: str, **kwargs):
         self.rfilename = rfilename  # filename relative to the repo root
         for k, v in kwargs.items():
             setattr(self, k, v)
@@ -144,22 +144,6 @@ class RepoFile:
     def __repr__(self):
         items = (f"{k}='{v}'" for k, v in self.__dict__.items())
         return f"{self.__class__.__name__}({', '.join(items)})"
-
-
-class ModelFile(RepoFile):
-    """
-    Data structure that represents a public file inside a repo, accessible from huggingface.co
-    """
-
-    pass
-
-
-class DatasetFile(RepoFile):
-    """
-    Data structure that represents a public file inside a dataset, accessible from huggingface.co
-    """
-
-    pass
 
 
 class ModelInfo:
@@ -227,8 +211,8 @@ class DatasetInfo:
         siblings: Optional[
             List[Dict]
         ] = None,  # list of files that constitute the dataset
-        private: Optional[bool] = None,  # community datasets only
-        author: Optional[str] = None,  # community datasets only
+        private: Optional[bool] = None,
+        author: Optional[str] = None,
         description: Optional[str] = None,
         citation: Optional[str] = None,
         cardData: Optional[dict] = None,
@@ -271,6 +255,7 @@ class SpaceInfo:
 
     def __init__(
         self,
+        *,
         id: Optional[str] = None,  # id of space
         sha: Optional[str] = None,  # commit sha at the specified revision
         lastModified: Optional[str] = None,  # date of last commit to repo
