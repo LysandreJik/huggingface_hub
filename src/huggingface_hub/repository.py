@@ -1126,7 +1126,7 @@ class Repository:
                 logger.warning("The progress bars may be unreliable.")
 
         try:
-            with _lfs_log_progress():
+            if not blocking:
                 process = subprocess.Popen(
                     command.split(),
                     stderr=subprocess.PIPE,
@@ -1134,8 +1134,16 @@ class Repository:
                     encoding="utf-8",
                     cwd=self.local_dir,
                 )
+            else:
+                with _lfs_log_progress():
+                    process = subprocess.Popen(
+                        command.split(),
+                        stderr=subprocess.PIPE,
+                        stdout=subprocess.PIPE,
+                        encoding="utf-8",
+                        cwd=self.local_dir,
+                    )
 
-                if blocking:
                     stdout, stderr = process.communicate()
                     return_code = process.poll()
                     process.kill()

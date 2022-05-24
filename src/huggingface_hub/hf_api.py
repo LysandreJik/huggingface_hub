@@ -667,15 +667,6 @@ class HfApi:
                     "You need to provide a `token` or be logged in to Hugging "
                     "Face with `huggingface-cli login`."
                 )
-        if name is not None:
-            if self._is_valid_token(name):
-                # TODO(0.6) REMOVE
-                warnings.warn(
-                    f"`{function_name}` now takes `token` as an optional positional"
-                    " argument. Be sure to adapt your code!",
-                    FutureWarning,
-                )
-                token, name = name, token
         if isinstance(token, str):
             if token.startswith("api_org"):
                 raise ValueError("You must use your personal account token.")

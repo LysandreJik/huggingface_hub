@@ -46,7 +46,7 @@ def metadata_save(local_path: Union[str, Path], data: Dict) -> None:
     https://docs.python.org/3/library/functions.html?highlight=open#open Does
     not work with "^M" linebreaks, which are replaced by \n
     """
-    line_break = "\n"
+    line_break = '\n'
     content = ""
     # try to detect existing newline character
     if os.path.exists(local_path):
@@ -55,7 +55,7 @@ def metadata_save(local_path: Union[str, Path], data: Dict) -> None:
                 line_break = readme.newlines[0]
             if type(readme.newlines) is str:
                 line_break = readme.newlines
-            content = readme.read()
+            content = readme.read().replace('\r\n', '\n')
 
     # creates a new file if it not
     with open(local_path, "w", newline="") as readme:

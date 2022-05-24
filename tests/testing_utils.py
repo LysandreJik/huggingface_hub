@@ -208,3 +208,23 @@ def retry_endpoint(function, number_of_tries: int = 3, wait_time: int = 5):
             return function(*args, **kwargs)
 
     return decorator
+
+
+def set_windows_write_permissions(func, path, exc_info):
+    """
+    Error handler for ``shutil.rmtree``.
+
+    If the error is due to an access error (read only file)
+    it attempts to add write permission and then retries.
+
+    If the error is for another reason it re-raises the error.
+
+    Usage : ``shutil.rmtree(path, onerror=onerror)``
+    """
+    import stat
+    # Is the error an access error?
+    if not os.access(path, os.W_OK):
+        os.chmod(path, stat.S_IWUSR)
+        func(path)
+    else:
+        raise

@@ -35,8 +35,7 @@ from huggingface_hub.repository import Repository
 from huggingface_hub.utils import logging
 
 from .testing_constants import ENDPOINT_STAGING, TOKEN, USER
-from .testing_utils import retry_endpoint, set_write_permission_and_retry
-
+from .testing_utils import retry_endpoint, set_write_permission_and_retry, set_windows_write_permissions
 
 ROUND_TRIP_MODELCARD_CASE = """
 ---
@@ -213,7 +212,7 @@ class RepocardUpdateTest(unittest.TestCase):
 
     def tearDown(self) -> None:
         self._api.delete_repo(repo_id=f"{self.REPO_NAME}", token=self._token)
-        shutil.rmtree(self.repo_path)
+        shutil.rmtree(self.repo_path, onerror=set_windows_write_permissions)
 
     def test_update_dataset_name(self):
         new_datasets_data = {"datasets": "['test/test_dataset']"}

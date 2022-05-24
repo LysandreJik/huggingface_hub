@@ -10,8 +10,7 @@ from huggingface_hub.hf_api import HfFolder
 from huggingface_hub.utils import logging
 
 from .testing_constants import ENDPOINT_STAGING, TOKEN, USER
-from .testing_utils import retry_endpoint, set_write_permission_and_retry
-
+from .testing_utils import retry_endpoint, set_write_permission_and_retry, set_windows_write_permissions
 
 logger = logging.get_logger(__name__)
 
@@ -64,7 +63,7 @@ class SnapshotDownloadTests(unittest.TestCase):
 
     def tearDown(self) -> None:
         self._api.delete_repo(repo_id=REPO_NAME, token=self._token)
-        shutil.rmtree(REPO_NAME)
+        shutil.rmtree(REPO_NAME, onerror=set_windows_write_permissions)
 
     def test_download_model(self):
         # Test `main` branch

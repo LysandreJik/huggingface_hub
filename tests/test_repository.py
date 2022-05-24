@@ -36,7 +36,7 @@ from .testing_constants import ENDPOINT_STAGING, TOKEN, USER
 from .testing_utils import (
     retry_endpoint,
     set_write_permission_and_retry,
-    with_production_testing,
+    with_production_testing, set_windows_write_permissions,
 )
 
 
@@ -48,14 +48,14 @@ def repo_name(id=uuid.uuid4().hex[:6]):
 
 
 WORKING_REPO_DIR = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), "fixtures/working_repo_2"
+    os.path.dirname(os.path.abspath(__file__)), "fixtures", "working_repo_2"
 )
 
 DATASET_FIXTURE = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), "fixtures/tiny_dataset"
+    os.path.dirname(os.path.abspath(__file__)), "fixtures", "tiny_dataset"
 )
 WORKING_DATASET_DIR = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), "fixtures/working_dataset"
+    os.path.dirname(os.path.abspath(__file__)), "fixtures", "working_dataset"
 )
 
 
@@ -297,17 +297,21 @@ class RepositoryTest(RepositoryCommonTest):
         # Check that the returned commit url
         # actually exists.
 
-        if result._process.poll() is None:
-            self.assertEqual(result.status, -1)
+        try:
+            if result._process.poll() is None:
+                self.assertEqual(result.status, -1)
 
-        while not result.is_done:
-            time.sleep(0.5)
+            while not result.is_done:
+                time.sleep(0.5)
 
-        self.assertTrue(result.is_done)
-        self.assertEqual(result.status, 0)
+            self.assertTrue(result.is_done)
+            self.assertEqual(result.status, 0)
 
-        r = requests.head(url)
-        r.raise_for_status()
+            r = requests.head(url)
+            r.raise_for_status()
+        finally:
+            print("Killing process.")
+            result._process.kill()
 
     @retry_endpoint
     def test_context_manager_non_blocking(self):
@@ -357,9 +361,9 @@ class RepositoryTest(RepositoryCommonTest):
             time.sleep(0.5)
 
         self.assertTrue(result.is_done)
-        self.assertEqual(result.status, -9)
+        self.assertNotEqual(result.status, 0)
 
-    @retry_endpoint
+
     def test_clone_with_endpoint(self):
         clone = Repository(
             f"{WORKING_REPO_DIR}/{self.REPO_NAME}",
@@ -375,7 +379,7 @@ class RepositoryTest(RepositoryCommonTest):
             with open("model.bin", "w") as f:
                 f.write("hello")
 
-        shutil.rmtree(f"{WORKING_REPO_DIR}/{self.REPO_NAME}")
+        shutil.rmtree(f"{WORKING_REPO_DIR}/{self.REPO_NAME}", onerror=set_windows_write_permissions)
 
         Repository(
             f"{WORKING_REPO_DIR}/{self.REPO_NAME}",
@@ -405,7 +409,7 @@ class RepositoryTest(RepositoryCommonTest):
             with open("model.bin", "w") as f:
                 f.write("hello")
 
-        shutil.rmtree(f"{WORKING_REPO_DIR}/{self.REPO_NAME}")
+        shutil.rmtree(f"{WORKING_REPO_DIR}/{self.REPO_NAME}", onerror=set_windows_write_permissions)
 
         Repository(
             f"{WORKING_REPO_DIR}/{self.REPO_NAME}",
@@ -437,7 +441,7 @@ class RepositoryTest(RepositoryCommonTest):
             with open("model.bin", "w") as f:
                 f.write("hello")
 
-        shutil.rmtree(f"{WORKING_REPO_DIR}/{self.REPO_NAME}")
+        shutil.rmtree(f"{WORKING_REPO_DIR}/{self.REPO_NAME}", onerror=set_windows_write_permissions)
 
         Repository(
             f"{WORKING_REPO_DIR}/{self.REPO_NAME}",
@@ -511,7 +515,6 @@ class RepositoryTest(RepositoryCommonTest):
         )
 
     @with_production_testing
-    @retry_endpoint
     def test_clone_repo_at_root(self):
         Repository(
             f"{WORKING_REPO_DIR}/{self.REPO_NAME}",
@@ -519,7 +522,7 @@ class RepositoryTest(RepositoryCommonTest):
             skip_lfs_files=True,
         )
 
-        shutil.rmtree(f"{WORKING_REPO_DIR}/{self.REPO_NAME}")
+        shutil.rmtree(f"{WORKING_REPO_DIR}/{self.REPO_NAME}", onerror=set_windows_write_permissions)
 
         Repository(
             f"{WORKING_REPO_DIR}/{self.REPO_NAME}",
@@ -1026,6 +1029,9 @@ class RepositoryOfflineTest(RepositoryCommonTest):
             cwd=WORKING_REPO_DIR,
         ).stdout.strip()
 
+        if isinstance(all_local_tags, bytes):
+            all_local_tags = all_local_tags.decode()
+
         if len(all_local_tags):
             subprocess.run(
                 ["git", "tag", "-d", all_local_tags],
@@ -1517,10 +1523,9 @@ class RepositoryOfflineTest(RepositoryCommonTest):
             encoding="utf-8",
         )
         repo = Repository(WORKING_REPO_DIR)
-        self.assertListEqual(
-            currently_setup_credential_helpers(repo.local_dir), ["get", "store"]
-        )
-        self.assertEqual(currently_setup_credential_helpers(), ["get"])
+        self.assertIn('get', currently_setup_credential_helpers(repo.local_dir))
+        self.assertIn('store', currently_setup_credential_helpers(repo.local_dir))
+        self.assertIn('get', currently_setup_credential_helpers())
 
     def test_add_tag(self):
         repo = Repository(
